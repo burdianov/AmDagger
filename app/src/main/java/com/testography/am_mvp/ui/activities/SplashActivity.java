@@ -19,10 +19,9 @@ import android.widget.TextView;
 
 import com.testography.am_mvp.BuildConfig;
 import com.testography.am_mvp.R;
+import com.testography.am_mvp.di.DaggerService;
 import com.testography.am_mvp.di.components.AuthViewComponent;
-import com.testography.am_mvp.di.components.DaggerAuthViewComponent;
-import com.testography.am_mvp.di.modules.AuthViewModule;
-import com.testography.am_mvp.di.scopes.DaggerService;
+import com.testography.am_mvp.di.scopes.AuthScope;
 import com.testography.am_mvp.mvp.presenters.AuthPresenter;
 import com.testography.am_mvp.mvp.presenters.IAuthPresenter;
 import com.testography.am_mvp.mvp.views.IAuthView;
@@ -34,6 +33,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.Provides;
 
 public class SplashActivity extends AppCompatActivity implements IAuthView, View.OnClickListener {
 
@@ -80,8 +80,7 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
         setContentView(R.layout.activity_splash);
         ButterKnife.bind(this);
 
-        AuthViewComponent component = DaggerService.getComponent(AuthViewComponent
-                .class);
+        Component component = DaggerService.getComponent(Component.class);
         if (component == null) {
             component = createDaggerComponent();
             DaggerService.registerComponent(AuthViewComponent.class, component);
@@ -252,9 +251,31 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
         }
     }
 
-    private AuthViewComponent createDaggerComponent() {
-        return DaggerAuthViewComponent.builder()
-                .authViewModule(new AuthViewModule())
+    //region ==================== DI ===================
+
+    @dagger.Module
+    public class Module {
+
+        @Provides
+        @AuthScope
+        AuthPresenter provideAuthPresenter() {
+            return new AuthPresenter();
+        }
+    }
+
+    @dagger.Component(modules = Module.class)
+    @AuthScope
+    interface Component {
+        void inject(SplashActivity activity);
+    }
+
+    private Component createDaggerComponent() {
+        return DaggerSplashActivity_Component.builder()
+                .module(new Module())
                 .build();
     }
+
+    //endregion
+
+
 }

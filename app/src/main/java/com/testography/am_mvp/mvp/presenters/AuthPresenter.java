@@ -6,15 +6,16 @@ import android.util.Log;
 
 import com.testography.am_mvp.R;
 import com.testography.am_mvp.data.managers.DataManager;
-import com.testography.am_mvp.di.components.AuthPresenterComponent;
-import com.testography.am_mvp.di.components.DaggerAuthPresenterComponent;
-import com.testography.am_mvp.di.modules.AuthPresenterModule;
+import com.testography.am_mvp.di.DaggerService;
+import com.testography.am_mvp.di.scopes.AuthScope;
 import com.testography.am_mvp.mvp.models.AuthModel;
 import com.testography.am_mvp.mvp.views.IAuthView;
 import com.testography.am_mvp.ui.custom_views.AuthPanel;
 import com.testography.am_mvp.utils.CredentialsValidator;
 
 import javax.inject.Inject;
+
+import dagger.Provides;
 
 public class AuthPresenter extends AbstractPresenter<IAuthView> implements
         IAuthPresenter {
@@ -27,7 +28,11 @@ public class AuthPresenter extends AbstractPresenter<IAuthView> implements
 
     public AuthPresenter() {
         mAuthModel = new AuthModel();
-        AuthPresenterComponent component = createDaggerComponent();
+        Component component = DaggerService.getComponent(Component.class);
+        if (component == null) {
+            component = createDaggerComponent();
+            DaggerService.registerComponent(Component.class, component);
+        }
         component.inject(this);
         Log.e(TAG, "AuthPresenter: inject complete");
     }
@@ -116,9 +121,31 @@ public class AuthPresenter extends AbstractPresenter<IAuthView> implements
         return mAuthModel.isAuthUser();
     }
 
-    private AuthPresenterComponent createDaggerComponent() {
-        return DaggerAuthPresenterComponent.builder()
-                .authPresenterModule(new AuthPresenterModule())
+    //region ==================== DI ===================
+
+    @dagger.Module
+    public class Module {
+
+        @Provides
+        @AuthScope
+        AuthModel provideAuthModel() {
+            return new AuthModel();
+        }
+    }
+
+    @dagger.Component(modules = Module.class)
+    @AuthScope
+    interface Component {
+        void inject(AuthPresenter presenter);
+    }
+
+    private Component createDaggerComponent() {
+        return DaggerAuthPresenter_Component.builder()
+                .module(new Module())
                 .build();
     }
+
+    //endregion
+
+
 }

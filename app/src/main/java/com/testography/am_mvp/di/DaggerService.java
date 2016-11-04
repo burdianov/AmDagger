@@ -1,4 +1,4 @@
-package com.testography.am_mvp.di.scopes;
+package com.testography.am_mvp.di;
 
 import android.support.annotation.Nullable;
 
