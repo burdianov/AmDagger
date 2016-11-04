@@ -2,29 +2,34 @@ package com.testography.am_mvp.mvp.presenters;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.testography.am_mvp.R;
 import com.testography.am_mvp.data.managers.DataManager;
+import com.testography.am_mvp.di.components.AuthPresenterComponent;
+import com.testography.am_mvp.di.components.DaggerAuthPresenterComponent;
+import com.testography.am_mvp.di.modules.AuthPresenterModule;
 import com.testography.am_mvp.mvp.models.AuthModel;
 import com.testography.am_mvp.mvp.views.IAuthView;
 import com.testography.am_mvp.ui.custom_views.AuthPanel;
 import com.testography.am_mvp.utils.CredentialsValidator;
 
+import javax.inject.Inject;
+
 public class AuthPresenter extends AbstractPresenter<IAuthView> implements
         IAuthPresenter {
-
     private static Context sAppContext = DataManager.getInstance().getAppContext();
-    private static AuthPresenter ourInstance = new AuthPresenter();
 
-    private AuthModel mAuthModel;
-    private IAuthView mAuthView;
+    public static final String TAG = "AuthPresenter";
 
-    private AuthPresenter() {
+    @Inject
+    AuthModel mAuthModel;
+
+    public AuthPresenter() {
         mAuthModel = new AuthModel();
-    }
-
-    public static AuthPresenter getInstance() {
-        return ourInstance;
+        AuthPresenterComponent component = createDaggerComponent();
+        component.inject(this);
+        Log.e(TAG, "AuthPresenter: inject complete");
     }
 
     @Override
@@ -109,5 +114,11 @@ public class AuthPresenter extends AbstractPresenter<IAuthView> implements
     @Override
     public boolean checkUserAuth() {
         return mAuthModel.isAuthUser();
+    }
+
+    private AuthPresenterComponent createDaggerComponent() {
+        return DaggerAuthPresenterComponent.builder()
+                .authPresenterModule(new AuthPresenterModule())
+                .build();
     }
 }

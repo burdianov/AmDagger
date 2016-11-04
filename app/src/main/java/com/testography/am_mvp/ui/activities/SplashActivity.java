@@ -19,6 +19,10 @@ import android.widget.TextView;
 
 import com.testography.am_mvp.BuildConfig;
 import com.testography.am_mvp.R;
+import com.testography.am_mvp.di.components.AuthViewComponent;
+import com.testography.am_mvp.di.components.DaggerAuthViewComponent;
+import com.testography.am_mvp.di.modules.AuthViewModel;
+import com.testography.am_mvp.di.scopes.DaggerService;
 import com.testography.am_mvp.mvp.presenters.AuthPresenter;
 import com.testography.am_mvp.mvp.presenters.IAuthPresenter;
 import com.testography.am_mvp.mvp.views.IAuthView;
@@ -26,12 +30,15 @@ import com.testography.am_mvp.ui.custom_views.AuthPanel;
 import com.testography.am_mvp.utils.ConstantsManager;
 import com.testography.am_mvp.utils.CustomTextWatcher;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class SplashActivity extends AppCompatActivity implements IAuthView, View.OnClickListener {
 
-    private AuthPresenter mPresenter = AuthPresenter.getInstance();
+    @Inject
+    AuthPresenter mPresenter;
 
     @BindView(R.id.coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
@@ -72,6 +79,14 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         ButterKnife.bind(this);
+
+        AuthViewComponent component = DaggerService.getComponent(AuthViewComponent
+                .class);
+        if (component == null) {
+            component = createDaggerComponent();
+            DaggerService.registerComponent(AuthViewComponent.class, component);
+        }
+        component.inject(this);
 
         mPresenter.takeView(this);
         mPresenter.initView();
@@ -235,5 +250,11 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
                 mPresenter.clickOnLogin();
                 break;
         }
+    }
+
+    private AuthViewComponent createDaggerComponent() {
+        return DaggerAuthViewComponent.builder()
+                .authViewModel(new AuthViewModel())
+                .build();
     }
 }
