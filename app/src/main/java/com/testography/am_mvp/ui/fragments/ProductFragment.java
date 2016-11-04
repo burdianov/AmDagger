@@ -1,9 +1,9 @@
 package com.testography.am_mvp.ui.fragments;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,18 +11,26 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
+import com.testography.am_mvp.App;
 import com.testography.am_mvp.R;
 import com.testography.am_mvp.data.storage.dto.ProductDto;
+import com.testography.am_mvp.di.DaggerService;
+import com.testography.am_mvp.di.components.DaggerPicassoComponent;
+import com.testography.am_mvp.di.components.PicassoComponent;
+import com.testography.am_mvp.di.modules.PicassoCacheModule;
+import com.testography.am_mvp.di.scopes.ProductScope;
 import com.testography.am_mvp.mvp.presenters.ProductPresenter;
-import com.testography.am_mvp.mvp.presenters.ProductPresenterFactory;
 import com.testography.am_mvp.mvp.views.IProductView;
 import com.testography.am_mvp.ui.activities.RootActivity;
 
-import butterknife.BindDrawable;
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.Provides;
 
 public class ProductFragment extends Fragment implements IProductView, View.OnClickListener {
     public static final String TAG = "ProductFragment";
@@ -42,11 +50,11 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
     @BindView(R.id.minus_btn)
     ImageButton mMinusBtn;
 
-    // TODO: 28-Oct-16 retrieve any image from internet via url with Picasso
-    @BindDrawable(R.drawable.radio_image)
-    Drawable mProductDraw;
+    @Inject
+    Picasso mPicasso;
 
-    private ProductPresenter mPresenter;
+    @Inject
+    ProductPresenter mPresenter;
 
     public ProductFragment() {
 
@@ -63,8 +71,9 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
     private void readBundle(Bundle bundle) {
         if (bundle != null) {
             ProductDto product = bundle.getParcelable("PRODUCT");
-            // TODO: 28-Oct-16 init presenter
-            mPresenter = ProductPresenterFactory.getInstance(product);
+            Component component = createDagerComponent(product);
+            component.inject(this);
+            // TODO: 04-Nov-16 fix recreate component
         }
     }
 
@@ -89,7 +98,7 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
 
     //region ==================== IProductView ===================
     @Override
-    public void showProductView(ProductDto product) {
+    public void showProductView(final ProductDto product) {
         mProductNameTxt.setText(product.getProductName());
         mProductDescriptionTxt.setText(product.getDescription());
         mProductCountTxt.setText(String.valueOf(product.getCount()));
@@ -100,17 +109,35 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
             mProductPriceTxt.setText(String.valueOf(product.getPrice() + ".-"));
         }
 
-        // TODO: 29-Oct-16 find the solution how to maintain proper size
-        // TODO: without using dontAnimate
-        Glide.with(getActivity())
-                .load(product.getImageUrl())
-                .placeholder(R.drawable.placeholder)
-                .error(R.drawable.placeholder)
-                .fitCenter()
-                .dontAnimate()
-//                .crossFade()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(mProductImage);
+        // TODO: 04-Nov-16 Adjust images size and use placeholder
+        mPicasso.load(product.getImageUrl())
+                .networkPolicy(NetworkPolicy.OFFLINE)
+                .fit()
+                .centerCrop()
+                .into(mProductImage, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.e(TAG, "onSuccess: load from cache");
+                    }
+
+                    @Override
+                    public void onError() {
+                        mPicasso.load(product.getImageUrl())
+                                .fit()
+                                .centerCrop()
+                                .into(mProductImage);
+                    }
+                });
+
+//        Glide.with(getActivity())
+//                .load(product.getImageUrl())
+//                .placeholder(R.drawable.placeholder)
+//                .error(R.drawable.placeholder)
+//                .fitCenter()
+//                .dontAnimate()
+////                .crossFade()
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(mProductImage);
     }
 
     @Override
@@ -158,4 +185,46 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
                 break;
         }
     }
+
+    //region ==================== DI ===================
+
+    private Component createDagerComponent(ProductDto product) {
+        PicassoComponent picassoComponent = DaggerService.getComponent(PicassoComponent.class);
+        if (picassoComponent == null) {
+            picassoComponent = DaggerPicassoComponent.builder()
+                    .appComponent(App.getAppComponent())
+                    .picassoCacheModule(new PicassoCacheModule())
+                    .build();
+            DaggerService.registerComponent(PicassoComponent.class, picassoComponent);
+        }
+        return DaggerProductFragment_Component.builder()
+                .picassoComponent(picassoComponent)
+                .module(new Module(product))
+                .build();
+    }
+
+    @dagger.Module
+    public class Module {
+        ProductDto mProductDto;
+
+        public Module(ProductDto productDto) {
+            mProductDto = productDto;
+        }
+
+        @Provides
+        @ProductScope
+        ProductPresenter provideProductPresenter() {
+            return new ProductPresenter(mProductDto);
+        }
+    }
+
+    @dagger.Component(dependencies = PicassoComponent.class, modules = Module.class)
+    @ProductScope
+    interface Component {
+        void inject(ProductFragment fragment);
+    }
+
+    //endregion
+
+
 }

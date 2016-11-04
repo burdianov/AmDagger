@@ -1,11 +1,8 @@
 package com.testography.am_mvp.mvp.presenters;
 
-import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import com.testography.am_mvp.R;
-import com.testography.am_mvp.data.managers.DataManager;
 import com.testography.am_mvp.di.DaggerService;
 import com.testography.am_mvp.di.scopes.AuthScope;
 import com.testography.am_mvp.mvp.models.AuthModel;
@@ -19,7 +16,7 @@ import dagger.Provides;
 
 public class AuthPresenter extends AbstractPresenter<IAuthView> implements
         IAuthPresenter {
-    private static Context sAppContext = DataManager.getInstance().getAppContext();
+//    private static Context sAppContext = DataManager.getInstance().getAppContext();
 
     public static final String TAG = "AuthPresenter";
 
@@ -65,12 +62,12 @@ public class AuthPresenter extends AbstractPresenter<IAuthView> implements
 
                 if (!CredentialsValidator.isValidEmail(email)) {
                     getView().requestEmailFocus();
-                    getView().showMessage(sAppContext.getString(R.string.err_msg_email));
+//                    getView().showMessage(sAppContext.getString(R.string.err_msg_email));
                     return;
                 }
                 if (!CredentialsValidator.isValidPassword(password)) {
                     getView().requestPasswordFocus();
-                    getView().showMessage(sAppContext.getString(R.string.err_msg_password));
+//                    getView().showMessage(sAppContext.getString(R.string.err_msg_password));
                     return;
                 }
                 mAuthModel.loginUser(email, password);

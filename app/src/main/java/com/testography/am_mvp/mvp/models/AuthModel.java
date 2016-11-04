@@ -1,13 +1,11 @@
 package com.testography.am_mvp.mvp.models;
 
-import com.testography.am_mvp.data.managers.DataManager;
+public class AuthModel extends AbstractModel {
 
-public class AuthModel {
-
-    private DataManager mDataManager;
+//    private DataManager mDataManager;
 
     public AuthModel() {
-        mDataManager = DataManager.getInstance();
+//        mDataManager = DataManager.getInstance();
     }
 
     public boolean isAuthUser() {

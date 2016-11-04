@@ -1,12 +1,11 @@
 package com.testography.am_mvp.mvp.models;
 
-import com.testography.am_mvp.data.managers.DataManager;
 import com.testography.am_mvp.data.storage.dto.ProductDto;
 
 import java.util.List;
 
-public class CatalogModel {
-    DataManager mDataManager = DataManager.getInstance();
+public class CatalogModel extends AbstractModel {
+//    DataManager mDataManager = DataManager.getInstance();
 
     public CatalogModel() {
 

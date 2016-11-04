@@ -4,31 +4,49 @@ import android.content.Context;
 
 import com.testography.am_mvp.App;
 import com.testography.am_mvp.R;
+import com.testography.am_mvp.data.network.RestService;
 import com.testography.am_mvp.data.storage.dto.ProductDto;
+import com.testography.am_mvp.di.DaggerService;
+import com.testography.am_mvp.di.components.DaggerDataManagerComponent;
+import com.testography.am_mvp.di.components.DataManagerComponent;
+import com.testography.am_mvp.di.modules.LocalModule;
+import com.testography.am_mvp.di.modules.NetworkModule;
 import com.testography.am_mvp.utils.ConstantsManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataManager {
-    private static DataManager ourInstance;
-    private List<ProductDto> mMockProductList;
+import javax.inject.Inject;
 
-    private PreferencesManager mPreferencesManager;
+public class DataManager {
+
+    @Inject
+    PreferencesManager mPreferencesManager;
+    @Inject
+    RestService mRestService;
+
+    private List<ProductDto> mMockProductList;
     private Context mAppContext;
 
-    private DataManager() {
-        mPreferencesManager = new PreferencesManager();
+    public DataManager() {
+
+//        mPreferencesManager = new PreferencesManager();
+        // TODO: 04-Nov-16 the following line MUST BE REFACTORED AS PER DI
         mAppContext = App.getAppContext();
 
-        generateMockData();
-    }
-
-    public static DataManager getInstance() {
-        if (ourInstance == null) {
-            ourInstance = new DataManager();
+        DataManagerComponent component = DaggerService.getComponent
+                (DataManagerComponent.class);
+        if (component == null) {
+            component = DaggerDataManagerComponent.builder()
+                    .appComponent(App.getAppComponent())
+                    .localModule(new LocalModule())
+                    .networkModule(new NetworkModule())
+                    .build();
+            DaggerService.registerComponent(DataManagerComponent.class, component);
         }
-        return ourInstance;
+        component.inject(this);
+
+        generateMockData();
     }
 
     public PreferencesManager getPreferencesManager() {

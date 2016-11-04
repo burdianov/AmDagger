@@ -1,15 +1,16 @@
 package com.testography.am_mvp.data.managers;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
-import com.testography.am_mvp.App;
 import com.testography.am_mvp.utils.ConstantsManager;
 
 public class PreferencesManager {
-    private SharedPreferences mSharedPreferences;
+    private final SharedPreferences mSharedPreferences;
 
-    public PreferencesManager() {
-        mSharedPreferences = App.getSharedPreferences();
+    public PreferencesManager(Context context) {
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     public void saveAuthToken(String authToken) {

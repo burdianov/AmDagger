@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.testography.am_mvp.di.components.AppComponent;
+import com.testography.am_mvp.di.components.DaggerAppComponent;
+import com.testography.am_mvp.di.modules.AppModule;
 
 public class App extends Application {
     private static SharedPreferences sSharedPreferences;
@@ -27,7 +29,9 @@ public class App extends Application {
     }
 
     private void createComponent() {
-//        sAppComponent
+        sAppComponent = DaggerAppComponent.builder()
+                .appModule(new AppModule(getApplicationContext()))
+                .build();
     }
 
     public static SharedPreferences getSharedPreferences() {
