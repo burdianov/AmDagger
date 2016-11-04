@@ -1,20 +1,33 @@
-package com.testography.am_mvp.data.managers;
+package com.testography.am_mvp;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-public class AmMvpApplication extends Application {
+import com.testography.am_mvp.di.components.AppComponent;
+
+public class App extends Application {
     private static SharedPreferences sSharedPreferences;
     private static Context sAppContext;
+
+    public static AppComponent getAppComponent() {
+        return sAppComponent;
+    }
+
+    private static AppComponent sAppComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        createComponent();
 
         sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sAppContext = getApplicationContext();
+    }
+
+    private void createComponent() {
+//        sAppComponent
     }
 
     public static SharedPreferences getSharedPreferences() {

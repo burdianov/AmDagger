@@ -20,7 +20,6 @@ import android.widget.TextView;
 import com.testography.am_mvp.BuildConfig;
 import com.testography.am_mvp.R;
 import com.testography.am_mvp.di.DaggerService;
-import com.testography.am_mvp.di.components.AuthViewComponent;
 import com.testography.am_mvp.di.scopes.AuthScope;
 import com.testography.am_mvp.mvp.presenters.AuthPresenter;
 import com.testography.am_mvp.mvp.presenters.IAuthPresenter;
@@ -83,7 +82,7 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
         Component component = DaggerService.getComponent(Component.class);
         if (component == null) {
             component = createDaggerComponent();
-            DaggerService.registerComponent(AuthViewComponent.class, component);
+            DaggerService.registerComponent(Component.class, component);
         }
         component.inject(this);
 

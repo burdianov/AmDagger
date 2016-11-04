@@ -2,6 +2,7 @@ package com.testography.am_mvp.data.managers;
 
 import android.content.Context;
 
+import com.testography.am_mvp.App;
 import com.testography.am_mvp.R;
 import com.testography.am_mvp.data.storage.dto.ProductDto;
 import com.testography.am_mvp.utils.ConstantsManager;
@@ -18,7 +19,7 @@ public class DataManager {
 
     private DataManager() {
         mPreferencesManager = new PreferencesManager();
-        mAppContext = AmMvpApplication.getAppContext();
+        mAppContext = App.getAppContext();
 
         generateMockData();
     }
