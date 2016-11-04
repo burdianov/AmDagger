@@ -8,7 +8,7 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class AuthViewModel {
+public class AuthViewModule {
     @Provides
     @Singleton
     AuthPresenter provideAuthPresenter() {

@@ -21,7 +21,7 @@ import com.testography.am_mvp.BuildConfig;
 import com.testography.am_mvp.R;
 import com.testography.am_mvp.di.components.AuthViewComponent;
 import com.testography.am_mvp.di.components.DaggerAuthViewComponent;
-import com.testography.am_mvp.di.modules.AuthViewModel;
+import com.testography.am_mvp.di.modules.AuthViewModule;
 import com.testography.am_mvp.di.scopes.DaggerService;
 import com.testography.am_mvp.mvp.presenters.AuthPresenter;
 import com.testography.am_mvp.mvp.presenters.IAuthPresenter;
@@ -254,7 +254,7 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
 
     private AuthViewComponent createDaggerComponent() {
         return DaggerAuthViewComponent.builder()
-                .authViewModel(new AuthViewModel())
+                .authViewModule(new AuthViewModule())
                 .build();
     }
 }
